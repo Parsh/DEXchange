@@ -2,7 +2,7 @@ pragma solidity ^0.4.21;
 
 interface ERC20{
     // Gets the total token supply
-    function totalSuply() external view returns (uint256);
+    function totalSupply() external view returns (uint256);
 
     // Gets the account balance for a supplied address(_owner)
     function balanceOf(address _owner) external view returns (uint256);
