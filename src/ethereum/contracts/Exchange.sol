@@ -53,4 +53,16 @@ contract Exchange {
     mapping (address => mapping (uint8 => uint)) tokenBalanceForAddress;
     mapping (address => uint) balanceEthForAddress;
 
+    // EVENTS //
+
+    // Deposit/Withdrawal Events
+    event DepositForTokenReceived(address indexed _from, uint indexed _symbolIndex, uint _amount, uint _timestamp);
+
+    event WithdrawalToken(address indexed _to, uint indexed _symbolIndex, uint _amount, uint _timestamp);
+
+    event DepositForEthRecieved(address indexed _from, uint _amount, uint _timestamp);
+    event WithdrawalEth(address indexed _to, uint _amount, uint _timestamp);
+
+    // Management Events
+    event TokenAddedToSystem(uint _symbolIndex, string _token, uint _timestamp);
 }
