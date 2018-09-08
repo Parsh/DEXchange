@@ -31,6 +31,33 @@ contract DEXtoken is ERC20 {
         return balances[_owner];
     }
 
-    
+    // Transfer the balance from owner's account to another account
+    function transfer(address _to, uint256 _amount) public returns (bool success){
+        if (balances[msg.sender] >= _amount && _amount > 0 
+        && balances[_to] + _amount > balances[_to]) {
+            balances[msg.sender] -= _amount;
+            balances[_to] += _amount;
+            emit Transfer(msg.sender, _to, _amount);
+            return true;
+            }
+        else {
+            return false;
+        }
+    }
+
+    // Send _value amount of tokens from address _from to address _to 
+    // Pre-requisite: sender must have been approved (by _from) to transfer the tokens
+    function tranferFrom(address _from, address _to, uint256 _amount) public returns (bool) {
+        if (balances[_from] >= _amount && allowed[_from][msg.sender] >= _amount 
+        && _amount > 0 && balances[_to] + _amount > balances[_to]){
+            balances[_from] -= _amount;
+            allowed[_from][msg.sender] -= _amount;
+            balances[_to] += _amount;
+            emit Transfer(_from, _to, _amount);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
