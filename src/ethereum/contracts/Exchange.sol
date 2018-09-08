@@ -63,6 +63,17 @@ contract Exchange {
     event DepositForEthRecieved(address indexed _from, uint _amount, uint _timestamp);
     event WithdrawalEth(address indexed _to, uint _amount, uint _timestamp);
 
+    // Order Events
+    event LimitSellOrderCreated(uint indexed _sumbolIndex, address indexed _who, uint _amountTokens, uint _priceInWei, uint _orderKey);
+
+    event SellOrderFulfilled(uint indexed _symbolIndex, uint _amount, uint _priceInWei, uint _orderKey);
+
+    event SellOrderCanceled(uint indexed _symbolIndex, uint _priceInWei, uint _orderKey);
+
+    event LimitBuyOrderCreated(uint indexed _symbolIndex, address indexed _who, uint _amountTokens, uint _priceInWei, uint _orderKey);
+
+    event BuyOrderCanceled(uint indexed _symbolIndex, uint _priceInWei, uint _orderKey);
+
     // Management Events
     event TokenAddedToSystem(uint _symbolIndex, string _token, uint _timestamp);
 }
