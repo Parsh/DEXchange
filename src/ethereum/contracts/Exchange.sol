@@ -42,14 +42,8 @@ contract Exchange {
     mapping (uint8 => Token) tokens;
     uint8 tokenIndex;
 
-    // setting up the owner
-    address public owner;
-
-    constructor () public {
-        owner = msg.sender;
-    }
-
     // BALANCES //
+    
     mapping (address => mapping (uint8 => uint)) tokenBalanceForAddress;
     mapping (address => uint) balanceEthForAddress;
 
@@ -76,8 +70,21 @@ contract Exchange {
 
     // Management Events
     event TokenAddedToSystem(uint _symbolIndex, string _token, uint _timestamp);
+    
+    // setting up the owner
+    address public owner;
+    
+    modifier onlyOwner(){
+        require(msg.sender == owner, "Only owner of the Exchange is allowed to perform the following operation");
+        _;
+    }
 
-    // DEPOSIT AND WITHDRAWAL ETHER//
+    constructor () public {
+        owner = msg.sender;
+    }
+
+    // DEPOSIT AND WITHDRAWAL ETHER //
+    
     function depositEther() public payable{
         require(balanceEthForAddress[msg.sender] + msg.value >= balanceEthForAddress[msg.sender], "Checking for overflow");
         balanceEthForAddress[msg.sender] += msg.value;
@@ -96,4 +103,43 @@ contract Exchange {
         return balanceEthForAddress[msg.sender];
     }
 
+    // TOKEN MANAGEMENT //
+    
+    function addToken(string _symbolName, address _erc20TokenAddress) public onlyOwner {
+        require(!hasToken(_symbolName), "Token already present");
+        require(tokenIndex + 1 > tokenIndex, "Chekcing for overflow");
+        tokenIndex++;
+        
+        tokens[tokenIndex].symbolName = _symbolName;
+        tokens[tokenIndex].tokenContract = _erc20TokenAddress;
+        emit TokenAddedToSystem(tokenIndex, _symbolName, now);
+    }
+    
+    function hasToken(string _symbolName) view public returns (bool) {
+        uint8 index = getSymbolIndex(_symbolName);
+        if (index == 0){
+            return false; //Token is not present
+        }
+        return true;
+    }
+    
+    function getSymbolIndex(string _symbolName) internal view returns (uint8) {
+        for (uint8 i = 1; i <= tokenIndex; i++){
+            if (stringsEqual(tokens[i].symbolName, _symbolName)){
+                return i;
+            }
+        }
+        return 0;
+    }
+    
+    function getSymbolIndexOrThrow(string _symbolName) public view returns (uint8) {
+        uint8 index = getSymbolIndex(_symbolName);
+        require(index > 0, "Token not present");
+        return index;
+    }
+    
+    function stringsEqual(string _a, string _b) internal pure returns (bool) {
+        return keccak256(_a) == keccak256(_b);
+    }
+    
 }
