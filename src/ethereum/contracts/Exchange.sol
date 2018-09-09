@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-import "./ERC20Interface.sol";
+import "./interface/ERC20Interface.sol";
 import "./DEXtoken.sol";
 
 contract Exchange {
@@ -217,7 +217,7 @@ contract Exchange {
             who: _who
         });
         
-        // If this is the first buyOffer in the buyBook corresponding to the given amount (_priceInWei) then..
+        // If this is the first buyOffer in the buyBook corresponding to the given buy amount (_priceInWei) then..
         if (tokens[_tokenIndex].buyBook[_priceInWei].offers_length == 1) {
             tokens[_tokenIndex].buyBook[_priceInWei].offers_key = 1;
             // we have a new buy order - increase the counter, so we can set the getOrderBook array later 
@@ -252,8 +252,10 @@ contract Exchange {
             else {
                 // the offer is neither the lowest nor highest, it's somewhere in the middle, therefore we need to find the right spot
                 
-                uint buyPrice = tokens[_tokenIndex].currentBuyPrice; // starting the buy price from the highest price
+                uint buyPrice = tokens[_tokenIndex].currentBuyPrice;
                 bool weFoundIt = false;
+                
+                // starting sellPrice as the highest price and moving down till we find the right spot
                 while (buyPrice > 0 && !weFoundIt) {
                     if (buyPrice < _priceInWei && tokens[_tokenIndex].buyBook[buyPrice].higherPrice > _priceInWei) {
                         // set the new order-book entry's higher/lowerPrice
@@ -315,12 +317,13 @@ contract Exchange {
             who: _who
         });
         
+        // If this is the first sellOffer in the buyBook corresponding to the given sell amount (_priceInWei) then..
         if (tokens[_tokenIndex].sellBook[_priceInWei].offers_length == 1) {
             tokens[_tokenIndex].sellBook[_priceInWei].offers_key = 1;
             // we have a new sell order - increase the counter, so we can set the getOrderBook array later
             tokens[_tokenIndex].amountSellPrices++;
             
-            // setting the lowerPrice and the higherPrice
+            // setting the lowerPrice (currentSellPrice is always the lowestSellPrice) and the higherPrice
             uint currentSellPrice = tokens[_tokenIndex].currentSellPrice;
             uint highestSellPrice = tokens[_tokenIndex].highestSellPrice;
             
@@ -338,6 +341,34 @@ contract Exchange {
                     tokens[_tokenIndex].sellBook[_priceInWei].higherPrice = 0;
                 }
                 tokens[_tokenIndex].highestSellPrice = _priceInWei;
+            }
+            else if (currentSellPrice > _priceInWei) {
+                // the sell offer is the lowest one
+                tokens[_tokenIndex].sellBook[currentSellPrice].lowerPrice = _priceInWei;
+                tokens[_tokenIndex].sellBook[currentSellPrice].higherPrice = currentSellPrice;
+                tokens[_tokenIndex].sellBook[currentSellPrice].lowerPrice = 0;
+                tokens[_tokenIndex].currentSellPrice = _priceInWei;
+            }
+            else {
+                // sell order is neither the highest nor the lowest, therefore, we would need to find the right spot
+                uint sellPrice = tokens[_tokenIndex].currentSellPrice;
+                bool weFoundIt = false;
+                
+                // starting sellPrice as the lowest price and moving up till we find the right spot
+                while (sellPrice < _priceInWei && tokens[_tokenIndex].sellBook[sellPrice].higherPrice > _priceInWei) {
+                    // set the new order-book entry's higher/lowerPrice
+                    tokens[_tokenIndex].sellBook[_priceInWei].lowerPrice = sellPrice;
+                    tokens[_tokenIndex].sellBook[_priceInWei].higherPrice = tokens[_tokenIndex].sellBook[sellPrice].higherPrice;
+                    
+                    // set the higherPrice'd order-book entry's lowerPrice to the current entry's price
+                    tokens[_tokenIndex].sellBook[tokens[_tokenIndex].sellBook[sellPrice].higherPrice].lowerPrice = _priceInWei;
+                    
+                    //set the lowerPrice'd order-book entry's higherPrice to the current entry's price
+                    tokens[_tokenIndex].sellBook[sellPrice].higherPrice = _priceInWei;
+                    
+                    weFoundIt = true;
+                }
+                sellPrice = tokens[_tokenIndex].sellBook[sellPrice].higherPrice;
             }
         }
     }
