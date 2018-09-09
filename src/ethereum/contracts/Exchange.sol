@@ -175,5 +175,38 @@ contract Exchange {
         uint8 symbolNameIndex = getSymbolIndexOrThrow(_symbolName);
         return tokenBalanceForAddress[msg.sender][symbolNameIndex];
     }
+
+    // NEW ORDER - BID ORDER //
+    
+    function buyToken(string _symbolName, uint _priceInWei, uint _amount) public {
+        uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
+        uint total_amount_ether_necessary = 0;
+        
+        if (tokens[tokenNameIndex].amountSellPrices == 0 || tokens[tokenNameIndex].currentSellPrice > _priceInWei){
+            // Limit order: We don't have enough offers to fulfill the order
+
+            // ethers required to buy the given amount of tokens
+            total_amount_ether_necessary = _amount * _priceInWei;
+            
+            // overflow checks
+            require(total_amount_ether_necessary >= _amount);
+            require(total_amount_ether_necessary >= _priceInWei);
+            require(balanceEthForAddress[msg.sender] >= total_amount_ether_necessary, "Insufficient ethers to buy the tokens");
+            require(balanceEthForAddress[msg.sender] - total_amount_ether_necessary >= 0, "Insufficient ethers to buy the tokens");
+            require(balanceEthForAddress[msg.sender] - total_amount_ether_necessary <= balanceEthForAddress[msg.sender], "Ether Underflow");
+            
+            // deduct the amount of ether from msg.sender's balance
+            balanceEthForAddress[msg.sender] -= total_amount_ether_necessary;
+            
+            // add the order to the OrderBook
+            addBuyOffer(tokenNameIndex, _priceInWei, _amount, msg.sender);
+            emit LimitBuyOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens, [tokenNameIndex].buyBook[_priceInWei].offers_lenght);
+            
+        }
+        else {
+            // TODO: Code for Market order
+        }
+    }
+ 
     
 }
