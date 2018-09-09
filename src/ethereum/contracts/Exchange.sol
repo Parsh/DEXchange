@@ -76,4 +76,24 @@ contract Exchange {
 
     // Management Events
     event TokenAddedToSystem(uint _symbolIndex, string _token, uint _timestamp);
+
+    // DEPOSIT AND WITHDRAWAL ETHER//
+    function depositEther() public payable{
+        require(balanceEthForAddress[msg.sender] + msg.value >= balanceEthForAddress[msg.sender], "Checking for overflow");
+        balanceEthForAddress[msg.sender] += msg.value;
+        emit DepositForEthRecieved(msg.sender, msg.value, now);
+    }
+
+    function withdrawEther(uint _amountInWei) public {
+        require(balanceEthForAddress[msg.sender] - _amountInWei > 0, "Insufficient Eth Balance");
+        require(balanceEthForAddress[msg.sender] - _amountInWei <= balanceEthForAddress[msg.sender], "Checking for underflow");
+        balanceEthForAddress[msg.sender] -= _amountInWei;
+        msg.sender.transfer(_amountInWei);
+        emit WithdrawalEth(msg.sender, _amountInWei, now);
+    }
+
+    function getEthBalanceInWei() public view returns (uint){
+        return balanceEthForAddress[msg.sender];
+    }
+
 }
