@@ -1,5 +1,6 @@
 pragma solidity ^0.4.21;
 
+import "./interface/ERC20Interface.sol";
 import "./DEXtoken.sol";
 
 contract Exchange {
@@ -78,7 +79,7 @@ contract Exchange {
         require(msg.sender == owner, "Only owner of the Exchange is allowed to perform the following operation");
         _;
     }
-
+    
     constructor () public {
         owner = msg.sender;
     }
@@ -86,14 +87,14 @@ contract Exchange {
     // DEPOSIT AND WITHDRAWAL ETHER //
     
     function depositEther() public payable{
-        require(balanceEthForAddress[msg.sender] + msg.value >= balanceEthForAddress[msg.sender], "Checking for overflow");
+        require(balanceEthForAddress[msg.sender] + msg.value >= balanceEthForAddress[msg.sender], "Ether overflow");
         balanceEthForAddress[msg.sender] += msg.value;
         emit DepositForEthRecieved(msg.sender, msg.value, now);
     }
 
     function withdrawEther(uint _amountInWei) public {
         require(balanceEthForAddress[msg.sender] - _amountInWei > 0, "Insufficient Eth Balance");
-        require(balanceEthForAddress[msg.sender] - _amountInWei <= balanceEthForAddress[msg.sender], "Checking for underflow");
+        require(balanceEthForAddress[msg.sender] - _amountInWei <= balanceEthForAddress[msg.sender], "Ether underflow");
         balanceEthForAddress[msg.sender] -= _amountInWei;
         msg.sender.transfer(_amountInWei);
         emit WithdrawalEth(msg.sender, _amountInWei, now);
@@ -107,7 +108,7 @@ contract Exchange {
     
     function addToken(string _symbolName, address _erc20TokenAddress) public onlyOwner {
         require(!hasToken(_symbolName), "Token already present");
-        require(tokenIndex + 1 > tokenIndex, "Chekcing for overflow");
+        require(tokenIndex + 1 > tokenIndex, "Token Index Overflow");
         tokenIndex++;
         
         tokens[tokenIndex].symbolName = _symbolName;
@@ -140,6 +141,34 @@ contract Exchange {
     
     function stringsEqual(string _a, string _b) internal pure returns (bool) {
         return keccak256(_a) == keccak256(_b);
+    }
+    
+    // DEPOSIT AND WITHDRAWAL TOKEN //
+    
+    function depositToken(string _symbolName, uint _amount) public {
+        uint8 symbolNameIndex = getSymbolIndexOrThrow(_symbolName);
+        require(tokens[symbolNameIndex].tokenContract != address(0), "Token contract doesn't exist"); // redundant testing to asertain token existense
+
+        ERC20Interface token = ERC20Interface(tokens[symbolNameIndex].tokenContract);
+        
+        require(token.transferFrom(msg.sender, address(this), _amount) == true, "Insufficient allowance: can not transfer the give amount");
+        require(tokenBalanceForAddress[msg.sender][symbolNameIndex] + _amount >= tokenBalanceForAddress[msg.sender][symbolNameIndex], " Token Overflow");
+        tokenBalanceForAddress[msg.sender][symbolNameIndex] += _amount;
+        emit DepositForTokenReceived(msg.sender, symbolNameIndex, _amount, now);
+    }
+    
+    function withdrawToken(string _symbolName, uint _amount) public {
+        uint8 symbolNameIndex = getSymbolIndexOrThrow(_symbolName);
+        require(tokens[symbolNameIndex].tokenContract != address(0), "Token contract doesn't exist"); // redundant testing to asertain token existense
+
+        ERC20Interface token = ERC20Interface(tokens[symbolNameIndex].tokenContract);
+        
+        require(tokenBalanceForAddress[msg.sender][symbolNameIndex] - _amount >= 0, "Insufficient tokens: cannot withdraw the given amount");
+        require(tokenBalanceForAddress[msg.sender][symbolNameIndex] - _amount <= tokenBalanceForAddress[msg.sender][symbolNameIndex], "Token Underflow");
+        
+        tokenBalanceForAddress[msg.sender][symbolNameIndex] -= _amount;
+        require(token.transfer(msg.sender, _amount) == true);
+        emit WithdrawalToken(msg.sender, symbolNameIndex, _amount ,now);
     }
     
 }
