@@ -170,5 +170,10 @@ contract Exchange {
         require(token.transfer(msg.sender, _amount) == true);
         emit WithdrawalToken(msg.sender, symbolNameIndex, _amount ,now);
     }
+
+    function getTokenBalance(string _symbolName) public view returns (uint){
+        uint8 symbolNameIndex = getSymbolIndexOrThrow(_symbolName);
+        return tokenBalanceForAddress[msg.sender][symbolNameIndex];
+    }
     
 }
