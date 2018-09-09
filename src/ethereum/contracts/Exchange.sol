@@ -216,7 +216,8 @@ contract Exchange {
             amount: _amount,
             who: _who
         });
-    
+        
+        // If this is the first buyOffer in the buyBook corresponding to the given amount (_priceInWei) then..
         if (tokens[_tokenIndex].buyBook[_priceInWei].offers_lenght == 1) {
             tokens[_tokenIndex].buyBook[_priceInWei].offers_key = 1;
             // we have a new buy order - increase the counter, so we can set the getOrderBook array later 
@@ -247,6 +248,28 @@ contract Exchange {
                 tokens[_tokenIndex].buyBook[_priceInWei].higherPrice = _priceInWei;
                 tokens[_tokenIndex].buyBook[_priceInWei].lowerPrice = currentBuyPrice;
                 tokens[_tokenIndex].currentBuyPrice = _priceInWei;
+            }
+            else {
+                // the offer is neither the lowest nor highest, it's somewhere in the middle, therefore we need to find the right spot
+                
+                uint buyPrice = tokens[_tokenIndex].currentBuyPrice; // starting the buy price from the highest price
+                bool weFoundIt = false;
+                while (buyPrice > 0 && !weFoundIt) {
+                    if (buyPrice < _priceInWei && tokens[_tokenIndex].buyBook[buyPrice].higherPrice > _priceInWei) {
+                        // set the new order-book entry's higher/lowerPrice
+                        tokens[_tokenIndex].buyBook[_priceInWei].lowerPrice = buyPrice;
+                        tokens[_tokenIndex].buyBook[_priceInWei].higherPrice = tokens[_tokenIndex].buyBook[buyPrice].higherPrice;
+                        
+                        // set the higherPrice'd order-book entry's lowerPrice to the current entry's price
+                        tokens[_tokenIndex].buyBook[tokens[_tokenIndex].buyBook[buyPrice].higherPrice].lowerPrice = _priceInWei;
+                        
+                        // set the lowerPrice'd order-book entry's higherPrice to the current entry's price
+                        tokens[_tokenIndex].buyBook[buyPrice].higherPrice = _priceInWei;
+                        
+                        weFoundIt = true;
+                    }
+                    buyPrice = tokens[_tokenIndex].buyBook[buyPrice].lowerPrice;
+                }
             }
         }   
     }
