@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-import "./interface/ERC20Interface.sol";
+import "./ERC20Interface.sol";
 import "./DEXtoken.sol";
 
 contract Exchange {
@@ -208,7 +208,7 @@ contract Exchange {
         }
     }
     
-    // BID LIMIT ORDER LOGIC
+    // BID LIMIT ORDER LOGIC //
     
     function addBuyOffer(uint8 _tokenIndex, uint _priceInWei, uint _amount, address _who) internal {
         tokens[_tokenIndex].buyBook[_priceInWei].offers_lenght++;
@@ -272,5 +272,34 @@ contract Exchange {
                 }
             }
         }   
+    }
+    
+    // NEW ORDER - ASK(SELL) ORDER //
+    
+    function sellToken(string _symbolName, uint _priceInWei, uint _amount) public {
+        uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
+        uint total_amount_ether_necessary = 0;
+        uint total_amount_ether_available = 0;
+        
+        if (tokens[tokenNameIndex].amountBuyPrices == 0 || tokens[tokenNameIndex].currentBuyPrice < _priceInWei){
+            // Limit Order: We don't have enough offers to fulfill this sell order
+            
+            // if we have enough ether, we can buy that
+            total_amount_ether_necessary = _amount * _priceInWei;
+            
+            // overflow checks
+            require(total_amount_ether_necessary >= _amount);
+            require(total_amount_ether_necessary >= _priceInWei);
+            require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= _amount, "Insufficient token balance");
+            require(tokenBalanceForAddress[msg.sender][tokenNameIndex] - _amount >= 0, "Insufficient token balance");
+            require(balanceEthForAddress[msg.sender] + total_amount_ether_necessary >= balanceEthForAddress[msg.sender], "Ether Overflow");
+            
+            // debit the amount of tokens
+            tokenBalanceForAddress[msg.sender][tokenNameIndex]  -= _amount;
+               
+            // add the order to the orderBook
+            addSellOffer(tokenNameIndex, _priceInWei, _amount, msg.sender);
+            emit LimitSellOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].sellBook[_priceInWei].offers_lenght);
+        }
     }
 }
