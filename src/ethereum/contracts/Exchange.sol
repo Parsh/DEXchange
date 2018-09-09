@@ -19,7 +19,7 @@ contract Exchange {
         mapping (uint => Offer) offers;
 
         uint offers_key;
-        uint offers_lenght;
+        uint offers_length;
     }
 
     struct Token {
@@ -183,7 +183,7 @@ contract Exchange {
         uint total_amount_ether_necessary = 0;
         
         if (tokens[tokenNameIndex].amountSellPrices == 0 || tokens[tokenNameIndex].currentSellPrice > _priceInWei){
-            // Limit order: We don't have enough offers to fulfill the order
+            // Limit Order: We don't have enough offers to fulfill the order
 
             // ethers required to buy the given amount of tokens
             total_amount_ether_necessary = _amount * _priceInWei;
@@ -200,25 +200,25 @@ contract Exchange {
             
             // add the order to the OrderBook
             addBuyOffer(tokenNameIndex, _priceInWei, _amount, msg.sender);
-            emit LimitBuyOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].buyBook[_priceInWei].offers_lenght);
+            emit LimitBuyOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].buyBook[_priceInWei].offers_length);
             
         }
         else {
-            // TODO: Code for Market order
+            // TODO: Code for Market Order
         }
     }
     
-    // BID LIMIT ORDER LOGIC //
+    // BID(BUY) LIMIT ORDER LOGIC //
     
     function addBuyOffer(uint8 _tokenIndex, uint _priceInWei, uint _amount, address _who) internal {
-        tokens[_tokenIndex].buyBook[_priceInWei].offers_lenght++;
-        tokens[_tokenIndex].buyBook[_priceInWei].offers[tokens[_tokenIndex].buyBook[_priceInWei].offers_lenght] = Offer({
+        tokens[_tokenIndex].buyBook[_priceInWei].offers_length++;
+        tokens[_tokenIndex].buyBook[_priceInWei].offers[tokens[_tokenIndex].buyBook[_priceInWei].offers_length] = Offer({
             amount: _amount,
             who: _who
         });
         
         // If this is the first buyOffer in the buyBook corresponding to the given amount (_priceInWei) then..
-        if (tokens[_tokenIndex].buyBook[_priceInWei].offers_lenght == 1) {
+        if (tokens[_tokenIndex].buyBook[_priceInWei].offers_length == 1) {
             tokens[_tokenIndex].buyBook[_priceInWei].offers_key = 1;
             // we have a new buy order - increase the counter, so we can set the getOrderBook array later 
             tokens[_tokenIndex].amountBuyPrices++;
@@ -299,7 +299,46 @@ contract Exchange {
                
             // add the order to the orderBook
             addSellOffer(tokenNameIndex, _priceInWei, _amount, msg.sender);
-            emit LimitSellOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].sellBook[_priceInWei].offers_lenght);
+            emit LimitSellOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].sellBook[_priceInWei].offers_length);
+        }
+        else {
+            // TODO: Code for Market Order
+        }
+    }
+    
+    // ASK(SELL) LIMIT ORDER LOGIC
+    
+    function addSellOffer(uint8 _tokenIndex, uint _priceInWei, uint _amount, address _who) internal {
+        tokens[_tokenIndex].sellBook[_priceInWei].offers_length++;
+        tokens[_tokenIndex].sellBook[_priceInWei].offers[tokens[_tokenIndex].sellBook[_priceInWei].offers_length] = Offer({
+            amount: _amount,
+            who: _who
+        });
+        
+        if (tokens[_tokenIndex].sellBook[_priceInWei].offers_length == 1) {
+            tokens[_tokenIndex].sellBook[_priceInWei].offers_key = 1;
+            // we have a new sell order - increase the counter, so we can set the getOrderBook array later
+            tokens[_tokenIndex].amountSellPrices++;
+            
+            // setting the lowerPrice and the higherPrice
+            uint currentSellPrice = tokens[_tokenIndex].currentSellPrice;
+            uint highestSellPrice = tokens[_tokenIndex].highestSellPrice;
+            
+            if (highestSellPrice == 0 || highestSellPrice < _priceInWei){
+                if (currentSellPrice == 0){
+                    // there is no sell order yet, we insert the first one
+                    tokens[_tokenIndex].currentSellPrice = _priceInWei;
+                    tokens[_tokenIndex].sellBook[_priceInWei].higherPrice = 0;
+                    tokens[_tokenIndex].sellBook[_priceInWei].lowerPrice = 0;
+                }
+                else {
+                    // this is highest sell order 
+                    tokens[_tokenIndex].sellBook[highestSellPrice].higherPrice = _priceInWei;
+                    tokens[_tokenIndex].sellBook[_priceInWei].lowerPrice = highestSellPrice;
+                    tokens[_tokenIndex].sellBook[_priceInWei].higherPrice = 0;
+                }
+                tokens[_tokenIndex].highestSellPrice = _priceInWei;
+            }
         }
     }
 }
