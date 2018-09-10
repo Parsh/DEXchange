@@ -177,7 +177,7 @@ contract Exchange {
     }
 
 
-    // ORDER BOOK - BID ORDERS //
+    // ORDER BOOK - BID(BUY) ORDERS //
 
     function getBuyOrderBook(string _symbolName) public view returns (uint[], uint[]){
         uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
@@ -215,8 +215,45 @@ contract Exchange {
         return (arrPricesBuy, arrVolumesBuy);
     }
 
-    
-    // NEW ORDER - BID ORDER //
+    // ORDER BOOK - ASK ORDER //
+    function getSellOrderBook(string _symbolName) public view returns (uint[], uint[]){
+        uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
+        uint[] memory arrPricesSell = new uint[](tokens[tokenNameIndex].amountSellPrices);
+        uint[] memory arrVolumesSell = new uint[](tokens[tokenNameIndex].amountSellPrices);
+        uint sellWhilePrice = tokens[tokenNameIndex].currentSellPrice;
+        uint sellCounter = 0;
+        if (tokens[tokenNameIndex].currentSellPrice > 0) {
+            while (sellWhilePrice <= tokens[tokenNameIndex].highestSellPrice) {
+                arrPricesSell[sellCounter] = sellWhilePrice;
+                uint sellVolumeAtPrice = 0;
+                uint sell_offers_key = 0;
+
+                sell_offers_key = tokens[tokenNameIndex].sellBook[sellWhilePrice].offers_key;
+                while (sell_offers_key <= tokens[tokenNameIndex].sellBook[sellWhilePrice].offers_length) {
+                    sellVolumeAtPrice += tokens[tokenNameIndex].sellBook[sellWhilePrice].offers[sell_offers_key].amount;
+                    sell_offers_key++;
+                }
+
+                arrVolumesSell[sellCounter] = sellVolumeAtPrice;
+
+                // moving to the next whilePrice
+                if (tokens[tokenNameIndex].sellBook[sellWhilePrice].higherPrice == 0) {
+                    break;
+                }
+                else {
+                    sellWhilePrice = tokens[tokenNameIndex].sellBook[sellWhilePrice].higherPrice;
+                }
+                sellCounter++;
+
+            }
+        }
+
+        //sell part
+        return (arrPricesSell, arrVolumesSell);
+    }
+
+
+    // NEW ORDER - BID(BUY) ORDER //
     
     function buyToken(string _symbolName, uint _priceInWei, uint _amount) public {
         uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
