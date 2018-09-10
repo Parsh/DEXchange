@@ -460,12 +460,18 @@ contract Exchange {
             uint tokensAmount = tokens[symbolNameIndex].sellBook[_priceInWei].offers[_offerKey].amount;
             require(tokenBalanceForAddress[msg.sender][symbolNameIndex] + tokensAmount >= tokenBalanceForAddress[msg.sender][symbolNameIndex], "Token Overflow");
 
-            tokens[symbolNameIndex].sellBook[priceInWei].offers[_offerKey].amount = 0;
+            tokens[symbolNameIndex].sellBook[_priceInWei].offers[_offerKey].amount = 0;
             tokenBalanceForAddress[msg.sender][symbolNameIndex] += tokensAmount;
-            emit SellOrderCanceled(symbolNameIndex, _priceInWei, _offerKey)
+            emit SellOrderCanceled(symbolNameIndex, _priceInWei, _offerKey);
 
         } else {
+            require(tokens[symbolNameIndex].buyBook[_priceInWei].offers[_offerKey].who == msg.sender, "Only the creator of the buy order can cancel it");
+            
+            uint etherToRefund = tokens[symbolNameIndex].buyBook[_priceInWei].offers[_offerKey].amount * _priceInWei;
+            require(balanceEthForAddress[msg.sender] + etherToRefund >= balanceEthForAddress[msg.sender], "Ether Overflow");
 
+            tokens[symbolNameIndex].buyBook[_priceInWei].offers[_offerKey].amount = 0;
+            balanceEthForAddress[msg.sender] += etherToRefund;
         }
     }
 }
