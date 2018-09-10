@@ -449,4 +449,23 @@ contract Exchange {
             }
         }
     }
+
+    // CANCEL LIMIT ORDER LOGIC //
+
+    function cancelOrder(string _symbolName, bool _isSellOrder, uint _priceInWei, uint _offerKey) public {
+        uint8 symbolNameIndex = getSymbolIndexOrThrow(_symbolName);
+        if (_isSellOrder){
+            require(tokens[symbolNameIndex].sellBook[_priceInWei].offers[_offerKey].who == msg.sender, "Only the creator of the sell order can cancel it");
+
+            uint tokensAmount = tokens[symbolNameIndex].sellBook[_priceInWei].offers[_offerKey].amount;
+            require(tokenBalanceForAddress[msg.sender][symbolNameIndex] + tokensAmount >= tokenBalanceForAddress[msg.sender][symbolNameIndex], "Token Overflow");
+
+            tokens[symbolNameIndex].sellBook[priceInWei].offers[_offerKey].amount = 0;
+            tokenBalanceForAddress[msg.sender][symbolNameIndex] += tokensAmount;
+            emit SellOrderCanceled(symbolNameIndex, _priceInWei, _offerKey)
+
+        } else {
+
+        }
+    }
 }
