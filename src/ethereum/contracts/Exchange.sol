@@ -359,12 +359,14 @@ contract Exchange {
         uint8 tokenNameIndex = getSymbolIndexOrThrow(_symbolName);
         uint total_amount_ether_necessary = 0;
         uint total_amount_ether_available = 0;
-        
+   
+             
         if (tokens[tokenNameIndex].amountBuyPrices == 0 || tokens[tokenNameIndex].currentBuyPrice < _priceInWei){
             // Limit Order: We don't have enough offers to fulfill this sell order
             
             // if we have enough ether, we can buy that
             total_amount_ether_necessary = _amount * _priceInWei;
+            
             
             // overflow checks
             require(total_amount_ether_necessary >= _amount);
@@ -381,7 +383,42 @@ contract Exchange {
             emit LimitSellOrderCreated(tokenNameIndex, msg.sender, _amount, _priceInWei, tokens[tokenNameIndex].sellBook[_priceInWei].offers_length);
         }
         else {
-            // TODO: Code for Market Order
+            //market order: current buy price is bigger or equal to sell price!
+
+            uint whilePrice = tokens[tokenNameIndex].currentBuyPrice;
+            uint amountNecessary = _amount;
+            uint offers_key;
+            while (whilePrice >= _priceInWei && amountNecessary > 0) {//we start with the highest buy price.
+                offers_key = tokens[tokenNameIndex].buyBook[whilePrice].offers_key;
+                while (offers_key <= tokens[tokenNameIndex].buyBook[whilePrice].offers_length && amountNecessary > 0) {//and the first order (FIFO)
+                    uint volumeAtPriceFromAddress = tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount;
+
+
+                    if (volumeAtPriceFromAddress <= amountNecessary) {
+                        total_amount_ether_available = volumeAtPriceFromAddress * whilePrice;
+
+
+                        //overflow check
+                        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= volumeAtPriceFromAddress);
+                        //actually subtract the amount of tokens to change it then
+                        tokenBalanceForAddress[msg.sender][tokenNameIndex] -= volumeAtPriceFromAddress;
+
+                        //overflow check
+                        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] - volumeAtPriceFromAddress >= 0);
+                        require(tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex] + volumeAtPriceFromAddress >= tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex]);
+                        require(balanceEthForAddress[msg.sender] + total_amount_ether_available >= balanceEthForAddress[msg.sender]);
+
+                        //this guy offers less or equal the volume that we ask for, so we use it up completely.
+                        tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex] += volumeAtPriceFromAddress;
+                        tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount = 0;
+                        balanceEthForAddress[msg.sender] += total_amount_ether_available;
+                        tokens[tokenNameIndex].buyBook[whilePrice].offers_key++;
+                        emit SellOrderFulfilled(tokenNameIndex, volumeAtPriceFromAddress, whilePrice, offers_key);
+
+
+                        amountNecessary -= volumeAtPriceFromAddress;
+                    }
+                    
         }
     }
     
