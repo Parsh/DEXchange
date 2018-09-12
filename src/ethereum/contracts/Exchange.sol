@@ -458,7 +458,25 @@ contract Exchange {
                             tokens[tokenNameIndex].currentBuyPrice = 0;
                             //we have reached the last price
                         }
-                            }
+                        else {
+                            tokens[tokenNameIndex].currentBuyPrice = tokens[tokenNameIndex].buyBook[whilePrice].lowerPrice;
+                            tokens[tokenNameIndex].buyBook[tokens[tokenNameIndex].buyBook[whilePrice].lowerPrice].higherPrice = tokens[tokenNameIndex].currentBuyPrice;
+                        }
+                    }
+                    offers_key++;
+                }
+
+                //we set the curSellPrice again, since when the volume is used up for a lowest price the curSellPrice is set there...
+                whilePrice = tokens[tokenNameIndex].currentBuyPrice;
+            }
+
+            if (amountNecessary > 0) {
+                sellToken(_symbolName, _priceInWei, amountNecessary);
+                //add a limit order, we couldn't fulfill all the orders!
+            }
+
+        }
+    }
     
     // ASK(SELL) LIMIT ORDER LOGIC
     
