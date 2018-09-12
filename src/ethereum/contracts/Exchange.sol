@@ -418,8 +418,34 @@ contract Exchange {
 
                         amountNecessary -= volumeAtPriceFromAddress;
                     }
+                    else {
+                        require(volumeAtPriceFromAddress - amountNecessary > 0);
+                        //just for sanity
+                        total_amount_ether_necessary = amountNecessary * whilePrice;
+                        //we take the rest of the outstanding amount
+
+                        //overflow check
+                        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= amountNecessary);
+                        //actually subtract the amount of tokens to change it then
+                        tokenBalanceForAddress[msg.sender][tokenNameIndex] -= amountNecessary;
+
+                        //overflow check
+                        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= amountNecessary);
+                        require(balanceEthForAddress[msg.sender] + total_amount_ether_necessary >= balanceEthForAddress[msg.sender]);
+                        require(tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex] + amountNecessary >= tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex]);
+
+                        //this guy offers more than we ask for. We reduce his stack, add the eth to us and the symbolName to him.
+                        tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount -= amountNecessary;
+                        balanceEthForAddress[msg.sender] += total_amount_ether_necessary;
+                        tokenBalanceForAddress[tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].who][tokenNameIndex] += amountNecessary;
+
+                        emit SellOrderFulfilled(tokenNameIndex, amountNecessary, whilePrice, offers_key);
+
+                        amountNecessary = 0;
+                        //we have fulfilled our order
+                    }
+
                     
-        }
     }
     
     // ASK(SELL) LIMIT ORDER LOGIC
