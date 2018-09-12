@@ -445,8 +445,20 @@ contract Exchange {
                         //we have fulfilled our order
                     }
 
-                    
-    }
+                    //if it was the last offer for that price, we have to set the curBuyPrice now lower. Additionally we have one offer less...
+                    if (
+                    offers_key == tokens[tokenNameIndex].buyBook[whilePrice].offers_length &&
+                    tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount == 0
+                    ) {
+
+                        tokens[tokenNameIndex].amountBuyPrices--;
+                        //we have one price offer less here...
+                        //next whilePrice
+                        if (whilePrice == tokens[tokenNameIndex].buyBook[whilePrice].lowerPrice || tokens[tokenNameIndex].buyBook[whilePrice].lowerPrice == 0) {
+                            tokens[tokenNameIndex].currentBuyPrice = 0;
+                            //we have reached the last price
+                        }
+                            }
     
     // ASK(SELL) LIMIT ORDER LOGIC
     
