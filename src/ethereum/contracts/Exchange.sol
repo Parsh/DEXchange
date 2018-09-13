@@ -312,6 +312,25 @@ contract Exchange {
 
                         amountNecessary -= volumeAtPriceFromAddress;
                     }
+                    else {
+
+                        total_amount_ether_necessary = amountNecessary * whilePrice;
+                       
+                        //overflow check
+                        require(balanceEthForAddress[msg.sender] - total_amount_ether_necessary <= balanceEthForAddress[msg.sender], "Ether Underflow");
+                        require(balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who] + total_amount_ether_necessary >= balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who], "Seller's Ether Overflow");
+                        
+                        //this seller offers more than the buyer ask for. Therefore, we reduce his stack and add the tokens to the buyer and the ether to him.
+                        balanceEthForAddress[msg.sender] -= total_amount_ether_necessary;
+                        tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].amount -= amountNecessary;
+                        balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who] += total_amount_ether_necessary;
+                        tokenBalanceForAddress[msg.sender][tokenNameIndex] += amountNecessary;
+
+                        amountNecessary = 0;
+                        //fulfilled the buy order
+                        emit SellOrderFulfilled(tokenNameIndex, amountNecessary, whilePrice, offers_key);
+                    }
+
                     
         }
     }
