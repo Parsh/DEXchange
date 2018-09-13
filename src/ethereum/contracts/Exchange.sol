@@ -345,7 +345,23 @@ contract Exchange {
                             tokens[tokenNameIndex].currentSellPrice = 0;
                             //we have reached the last price (highest)
                         }
-                                }
+                        else {
+                            tokens[tokenNameIndex].currentSellPrice = tokens[tokenNameIndex].sellBook[whilePrice].higherPrice;
+                            tokens[tokenNameIndex].sellBook[tokens[tokenNameIndex].buyBook[whilePrice].higherPrice].lowerPrice = 0;
+                        }
+                    }
+                    offers_key++;
+                }
+
+                //the currentSellPrice is updated above; if we have completely used up the volume for the previous price.
+                whilePrice = tokens[tokenNameIndex].currentSellPrice;
+            }
+
+            if (amountNecessary > 0) {
+                buyToken(_symbolName, _priceInWei, amountNecessary);
+                //add a limit order!
+            }
+        }
     }
     
     // BID(BUY) LIMIT ORDER LOGIC //
