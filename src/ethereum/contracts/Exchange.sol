@@ -281,7 +281,18 @@ contract Exchange {
             
         }
         else {
-            // TODO: Code for Market Order
+            //Market Order: current sell price is smaller or equal to buy price.
+
+            uint total_amount_ether_available = 0;
+            uint whilePrice = tokens[tokenNameIndex].currentSellPrice;
+            uint amountNecessary = _amount;
+            uint offers_key;
+            while (whilePrice <= _priceInWei && amountNecessary > 0) {//we start with the smallest sell price.
+                offers_key = tokens[tokenNameIndex].sellBook[whilePrice].offers_key;
+                while (offers_key <= tokens[tokenNameIndex].sellBook[whilePrice].offers_length && amountNecessary > 0) {//and the first order (FIFO)
+                    uint volumeAtPriceFromAddress = tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].amount;
+
+                   
         }
     }
     
