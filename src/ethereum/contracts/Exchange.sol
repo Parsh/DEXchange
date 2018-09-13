@@ -331,8 +331,21 @@ contract Exchange {
                         emit SellOrderFulfilled(tokenNameIndex, amountNecessary, whilePrice, offers_key);
                     }
 
-                    
-        }
+                    //if it was the last offer for that price, we have to set the currentBuyPrice to the lower value. Additionally we have one offer less...
+                    if (
+                    offers_key == tokens[tokenNameIndex].sellBook[whilePrice].offers_length &&
+                    tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].amount == 0
+                    ) {
+
+                        tokens[tokenNameIndex].amountSellPrices--;
+                        //we have one price offer less here...
+                        
+                        //next whilePrice
+                        if (whilePrice == tokens[tokenNameIndex].sellBook[whilePrice].higherPrice || tokens[tokenNameIndex].buyBook[whilePrice].higherPrice == 0) {
+                            tokens[tokenNameIndex].currentSellPrice = 0;
+                            //we have reached the last price (highest)
+                        }
+                                }
     }
     
     // BID(BUY) LIMIT ORDER LOGIC //
