@@ -292,7 +292,27 @@ contract Exchange {
                 while (offers_key <= tokens[tokenNameIndex].sellBook[whilePrice].offers_length && amountNecessary > 0) {//and the first order (FIFO)
                     uint volumeAtPriceFromAddress = tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].amount;
 
-                   
+                    if (volumeAtPriceFromAddress <= amountNecessary) {
+                        total_amount_ether_available = volumeAtPriceFromAddress * whilePrice;
+
+                        //overflow checks
+                        require(balanceEthForAddress[msg.sender] >= total_amount_ether_available, "Don't have enough ethers");
+                        require(balanceEthForAddress[msg.sender] - total_amount_ether_available <= balanceEthForAddress[msg.sender], "Underflow check");
+                        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] + volumeAtPriceFromAddress >= tokenBalanceForAddress[msg.sender][tokenNameIndex], "Token Overflow");
+                        require(balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who] + total_amount_ether_available >= balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who], "Ether Overflow");
+
+                        //this guy offers less or equal the volume that we ask for, so we use it up completely.
+                        balanceEthForAddress[msg.sender] -= total_amount_ether_available;
+                        tokenBalanceForAddress[msg.sender][tokenNameIndex] += volumeAtPriceFromAddress;
+                        tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].amount = 0;
+                        balanceEthForAddress[tokens[tokenNameIndex].sellBook[whilePrice].offers[offers_key].who] += total_amount_ether_available;
+                        tokens[tokenNameIndex].sellBook[whilePrice].offers_key++;
+
+                        emit SellOrderFulfilled(tokenNameIndex, volumeAtPriceFromAddress, whilePrice, offers_key);
+
+                        amountNecessary -= volumeAtPriceFromAddress;
+                    }
+                    
         }
     }
     
