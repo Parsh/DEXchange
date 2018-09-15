@@ -46,3 +46,21 @@ const deployDEXtoken = async () => {
     DEXtoken.options.address
   );
 };
+
+const deployExchange = async () => {
+  Exchange = await new web3.eth.Contract(JSON.parse(compiledExchange.interface))
+    .deploy({
+      data: '0x' + compiledExchange.bytecode
+    })
+    .send({
+      from: accounts[0],
+      gas: '6500000'
+    });
+
+  console.log(
+    'Exchange is deployed! Contract Address: ',
+    Exchange.options.address
+  );
+};
+
+deployDEXtoken().then(deployExchange);
