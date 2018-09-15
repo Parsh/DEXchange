@@ -29,3 +29,20 @@ let accounts;
 //     ERC20Interface.options.address
 //   );
 // };
+
+const deployDEXtoken = async () => {
+  accounts = await web3.eth.getAccounts();
+  DEXtoken = await new web3.eth.Contract(JSON.parse(compiledDEXtoken.interface))
+    .deploy({
+      data: '0x' + compiledDEXtoken.bytecode
+    })
+    .send({
+      from: accounts[0],
+      gas: '6000000'
+    });
+
+  console.log(
+    'DEXtoken is deployed! Contract Address: ',
+    DEXtoken.options.address
+  );
+};
