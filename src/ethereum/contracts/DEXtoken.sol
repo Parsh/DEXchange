@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-import "./interface/ERC20Interface.sol";
+import "./ERC20Interface.sol";
 
 contract DEXtoken is ERC20Interface {
     string public constant symbol = "DEX";
