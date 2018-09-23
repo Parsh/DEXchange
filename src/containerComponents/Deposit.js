@@ -6,12 +6,17 @@ class Deposit extends Component {
   state = {};
   render() {
     return (
-      <div className="row">
-        <div className="col-md-6">
-          <TokenDeposit />
+      <div className="container">
+        <div className="row">
+          <div className="h1-responsive m-auto"> DEPOSIT </div>
         </div>
-        <div className="col-md-6">
-          <EtherDeposit />
+        <div className="row">
+          <div className="col-md-5 col-sm-12 offset-md-1 mt-5">
+            <TokenDeposit />
+          </div>
+          <div className="col-md-5 col-sm-12 mt-5">
+            <EtherDeposit />
+          </div>
         </div>
       </div>
     );
