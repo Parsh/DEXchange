@@ -23,4 +23,4 @@ class Withdrawal extends Component {
   }
 }
 
-export default Component;
+export default Withdrawal;

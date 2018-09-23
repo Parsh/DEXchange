@@ -5,6 +5,7 @@ import 'mdbreact/dist/css/mdb.css';
 
 import Navbar from './containerComponents/Navbar';
 import Deposit from './containerComponents/Deposit';
+import Withdrawal from './containerComponents/Withdrawal';
 
 class App extends Component {
   render() {
@@ -13,6 +14,8 @@ class App extends Component {
         <Navbar />
         <div className="container" style={{ marginTop: '100px' }}>
           <Deposit />
+          <br />
+          <Withdrawal />
         </div>
       </div>
     );

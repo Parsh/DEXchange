@@ -11,7 +11,7 @@ const EtherDeposit = props => {
       </div>
       <div className="text-center">
         <Button outline color="info">
-          Deposit Ether <Fa icon="paper-plane-o" className="ml-1" />
+          Deposit <Fa icon="paper-plane-o" className="ml-1" />
         </Button>
       </div>
     </form>
