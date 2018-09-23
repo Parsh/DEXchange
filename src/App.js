@@ -15,6 +15,7 @@ class App extends Component {
         <div className="container" style={{ marginTop: '100px' }}>
           <Deposit />
           <br />
+          <hr /> <br />
           <Withdrawal />
         </div>
       </div>

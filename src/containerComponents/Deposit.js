@@ -6,9 +6,9 @@ class Deposit extends Component {
   state = {};
   render() {
     return (
-      <div className="container">
+      <div className="container mb-4">
         <div className="row">
-          <div className="h1-responsive m-auto"> DEPOSIT </div>
+          <div className="h1-responsive m-auto"> Deposit </div>
         </div>
         <div className="row">
           <div className="col-md-5 col-sm-12 offset-md-1 mt-5">

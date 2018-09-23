@@ -6,9 +6,9 @@ class Withdrawal extends Component {
   state = {};
   render() {
     return (
-      <div className="container">
+      <div className="container mb-5">
         <div className="row">
-          <div className="h1-responsive m-auto"> Withdrawal </div>
+          <div className="h1-responsive m-auto"> Withdraw </div>
         </div>
         <div className="row">
           <div className="col-md-5 col-sm-12 offset-md-1 mt-5">
