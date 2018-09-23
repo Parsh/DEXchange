@@ -3,8 +3,9 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
 
-import Navbar from './presentationalComponents/Navbar';
-import Deposit from './presentationalComponents/Deposit';
+import Navbar from './containerComponents/Navbar';
+import Deposit from './containerComponents/Deposit';
+
 class App extends Component {
   render() {
     return (
