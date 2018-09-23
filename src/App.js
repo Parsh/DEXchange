@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import './App.css';
 
 class App extends Component {
   render() {
-    return <div>DEXchange Here!</div>;
+    return <div className="container">Back to MDB</div>;
   }
 }
 
