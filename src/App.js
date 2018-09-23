@@ -4,57 +4,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
 
 import Navbar from './presentationalComponents/Navbar';
+import Deposit from './presentationalComponents/Deposit';
 class App extends Component {
   render() {
     return (
-      <div className="container">
+      <div>
         <Navbar />
-        <br />
-        <br /> <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br /> <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
+        <div className="container" style={{ marginTop: '100px' }}>
+          <Deposit />
+        </div>
       </div>
     );
   }
